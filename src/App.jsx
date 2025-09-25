@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
-import { Heart, ShoppingCart, Plus, Minus, MapPin, Clock, Bike } from 'lucide-react'
+import { Heart, ShoppingCart, Plus, Minus, MapPin, Clock } from 'lucide-react'
 import cookiesImg from './assets/cookies.jpg'
 import browniesImg from './assets/brownies.jpg'
 import './App.css'
@@ -208,8 +208,6 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
     address: ''
   })
   const [upsellQuantity, setUpsellQuantity] = useState(0)
-  const [paymentMethod, setPaymentMethod] = useState('')
-  const [deliveryMethod, setDeliveryMethod] = useState('')
 
   // Determinar qual produto oferecer como upsell
   const getUpsellProduct = () => {
@@ -240,18 +238,12 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
   const getFinalTotal = () => {
     const cartTotal = getCartTotal()
     const upsellTotal = getUpsellTotal()
-    let subtotal = cartTotal + upsellTotal
+    const subtotal = cartTotal + upsellTotal
     
     // Aplicar desconto de 10% se escolheu 2 unidades do produto upsell
     if (upsellQuantity === 2) {
-      subtotal = subtotal * 0.9
+      return subtotal * 0.9
     }
-    
-    // Aplicar acréscimo de 5% se escolheu cartão
-    if (paymentMethod === 'cartao') {
-      subtotal = subtotal * 1.05
-    }
-    
     return subtotal
   }
 
@@ -263,24 +255,7 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
     return 0
   }
 
-  const getCardFeeAmount = () => {
-    if (paymentMethod === 'cartao') {
-      const cartTotal = getCartTotal()
-      const upsellTotal = getUpsellTotal()
-      let subtotal = cartTotal + upsellTotal
-      
-      // Aplicar desconto primeiro se aplicável
-      if (upsellQuantity === 2) {
-        subtotal = subtotal * 0.9
-      }
-      
-      return subtotal * 0.05
-    }
-    return 0
-  }
-
   const showDiscount = upsellQuantity === 2
-  const showCardFee = paymentMethod === 'cartao'
 
   const handleInputChange = (field, value) => {
     setCustomerData(prev => ({
@@ -292,14 +267,12 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
   const isFormValid = () => {
     return customerData.name.trim() && 
            customerData.phone.trim() && 
-           (deliveryMethod === 'retirada' || customerData.address.trim()) &&
-           paymentMethod &&
-           deliveryMethod
+           customerData.address.trim()
   }
 
   const handleConfirmOrder = () => {
     if (!isFormValid()) {
-      alert('Por favor, preencha todos os campos obrigatórios e selecione as opções de pagamento e recebimento.')
+      alert('Por favor, preencha todos os campos obrigatórios.')
       return
     }
 
@@ -326,12 +299,7 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
     message += `📋 *Pedido:* ${orderNumber}\n`
     message += `👤 *Cliente:* ${customerData.name}\n`
     message += `📱 *WhatsApp:* ${customerData.phone}\n`
-    
-    // Adicionar endereço apenas se for entrega
-    if (deliveryMethod === 'entrega') {
-      message += `📍 *Endereço:* ${customerData.address}\n`
-    }
-    message += `\n`
+    message += `📍 *Endereço:* ${customerData.address}\n\n`
     
     message += `🛒 *PRODUTOS:*\n`
     Object.entries(finalCart).forEach(([productId, quantity]) => {
@@ -350,30 +318,10 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
     }
     
     message += `\n💳 *Valor para confirmar (50%):* R$ ${confirmationAmount.toFixed(2).replace('.', ',')}\n`
-    message += `💳 *Restante na ${deliveryMethod === 'entrega' ? 'entrega' : 'retirada'}:* R$ ${(finalTotal - confirmationAmount).toFixed(2).replace('.', ',')}\n\n`
+    message += `💳 *Restante na entrega:* R$ ${(finalTotal - confirmationAmount).toFixed(2).replace('.', ',')}\n\n`
     
-    // Adicionar informações de pagamento
-    const paymentLabels = {
-      'pix': '💰 PIX',
-      'cartao': '💳 Cartão'
-    }
-    message += `💳 *Forma de Pagamento:* ${paymentLabels[paymentMethod]}\n`
-    
-    // Adicionar acréscimo do cartão se aplicável
-    if (showCardFee) {
-      message += `💳 *Acréscimo Cartão (5%):* R$ ${getCardFeeAmount().toFixed(2).replace('.', ',')}\n`
-    }
-    
-    // Adicionar informações de recebimento
-    if (deliveryMethod === 'entrega') {
-      message += `🚚 *Recebimento:* Entrega\n`
-      message += `📅 *Entrega:* Sábados e Domingos\n`
-      message += `📍 *Região:* Espera Feliz - MG\n\n`
-    } else {
-      message += `🏪 *Recebimento:* Retirar no Local\n`
-      message += `📅 *Retirada:* Sábados e Domingos\n\n`
-    }
-    
+    message += `📅 *Entrega:* Sábados e Domingos\n`
+    message += `📍 *Região:* Espera Feliz - MG\n\n`
     message += `✅ Cliente confirma o pedido e aguarda instruções de pagamento.`
 
     // Redirecionar para WhatsApp
@@ -426,16 +374,6 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
                     <div className="flex justify-between content-font text-sm text-green-600">
                       <span>Desconto (10%):</span>
                       <span>-R$ {getDiscountAmount().toFixed(2).replace('.', ',')}</span>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Mostrar acréscimo do cartão se aplicável */}
-                {showCardFee && (
-                  <div className="border-t pt-2 mt-2">
-                    <div className="flex justify-between content-font text-sm text-orange-600">
-                      <span>Acréscimo Cartão (5%):</span>
-                      <span>+R$ {getCardFeeAmount().toFixed(2).replace('.', ',')}</span>
                     </div>
                   </div>
                 )}
@@ -521,159 +459,6 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
               </div>
             )}
 
-            {/* Opções de Recebimento */}
-            <div className="space-y-4">
-              <h4 className="content-font font-semibold text-gray-800">Como você quer receber?</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div 
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    deliveryMethod === 'entrega' 
-                      ? 'border-pink-500 bg-pink-50' 
-                      : 'border-gray-200 bg-white hover:border-pink-300'
-                  }`}
-                  onClick={() => setDeliveryMethod('entrega')}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      deliveryMethod === 'entrega' 
-                        ? 'border-pink-500 bg-pink-500' 
-                        : 'border-gray-300'
-                    }`}>
-                      {deliveryMethod === 'entrega' && (
-                        <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                      )}
-                    </div>
-                    <div>
-                      <h5 className="content-font font-semibold text-gray-800 flex items-center gap-2">
-                        <Bike className="w-4 h-4" /> Entrega
-                      </h5>
-                      <p className="content-font text-sm text-gray-600">Sábados e domingos em Espera Feliz - MG</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div 
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    deliveryMethod === 'retirada' 
-                      ? 'border-pink-500 bg-pink-50' 
-                      : 'border-gray-200 bg-white hover:border-pink-300'
-                  }`}
-                  onClick={() => setDeliveryMethod('retirada')}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      deliveryMethod === 'retirada' 
-                        ? 'border-pink-500 bg-pink-500' 
-                        : 'border-gray-300'
-                    }`}>
-                      {deliveryMethod === 'retirada' && (
-                        <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                      )}
-                    </div>
-                    <div>
-                      <h5 className="content-font font-semibold text-gray-800">🏪 Retirar no Local</h5>
-                      <p className="content-font text-sm text-gray-600">Centro - Próximo ao supermercado Vivenci - Beira Rio</p>
-                      <p className="content-font text-xs text-gray-500">Sábados e domingos</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Opções de Pagamento */}
-            <div className="space-y-4">
-              <h4 className="content-font font-semibold text-gray-800">Como você quer pagar?</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div 
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    paymentMethod === 'pix' 
-                      ? 'border-pink-500 bg-pink-50' 
-                      : 'border-gray-200 bg-white hover:border-pink-300'
-                  }`}
-                  onClick={() => setPaymentMethod('pix')}
-                >
-                  <div className="text-center">
-                    <div className={`w-4 h-4 rounded-full border-2 mx-auto mb-2 ${
-                      paymentMethod === 'pix' 
-                        ? 'border-pink-500 bg-pink-500' 
-                        : 'border-gray-300'
-                    }`}>
-                      {paymentMethod === 'pix' && (
-                        <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                      )}
-                    </div>
-                    <h5 className="content-font font-semibold text-gray-800">💰 PIX</h5>
-                    <p className="content-font text-xs text-gray-600">Instantâneo</p>
-                  </div>
-                </div>
-                
-                <div 
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    paymentMethod === 'cartao' 
-                      ? 'border-pink-500 bg-pink-50' 
-                      : 'border-gray-200 bg-white hover:border-pink-300'
-                  }`}
-                  onClick={() => setPaymentMethod('cartao')}
-                >
-                  <div className="text-center">
-                    <div className={`w-4 h-4 rounded-full border-2 mx-auto mb-2 ${
-                      paymentMethod === 'cartao' 
-                        ? 'border-pink-500 bg-pink-500' 
-                        : 'border-gray-300'
-                    }`}>
-                      {paymentMethod === 'cartao' && (
-                        <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                      )}
-                    </div>
-                    <h5 className="content-font font-semibold text-gray-800">💳 Cartão</h5>
-                    <p className="content-font text-xs text-gray-600">Débito/Crédito (+5%)</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Instruções de Pagamento */}
-              {paymentMethod === 'pix' && (
-                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                  <h5 className="content-font font-semibold text-green-800 mb-2">
-                    🎉 Obrigado por escolher PIX!
-                  </h5>
-                  <p className="content-font text-sm text-green-700 mb-2">
-                    Realize o pagamento na chave PIX abaixo:
-                  </p>
-                  <div className="bg-white p-3 rounded border border-green-300">
-                    <p className="content-font text-lg font-bold text-center text-green-800">
-                      32984218936
-                    </p>
-                  </div>
-                  <p className="content-font text-xs text-green-600 mt-2 text-center">
-                    Após o pagamento, envie o comprovante via WhatsApp
-                  </p>
-                </div>
-              )}
-              
-              {paymentMethod === 'cartao' && (
-                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                  <h5 className="content-font font-semibold text-orange-800 mb-2">
-                    🎉 Obrigado por escolher Cartão!
-                  </h5>
-                  <p className="content-font text-sm text-orange-700 mb-2">
-                    Há um pequeno acréscimo de 5% para pagamento no cartão.
-                  </p>
-                  <div className="bg-white p-3 rounded border border-orange-300">
-                    <p className="content-font text-sm text-center text-orange-800">
-                      <strong>Acréscimo:</strong> R$ {getCardFeeAmount().toFixed(2).replace('.', ',')}
-                    </p>
-                    <p className="content-font text-lg font-bold text-center text-orange-800">
-                      <strong>Total com cartão:</strong> R$ {getFinalTotal().toFixed(2).replace('.', ',')}
-                    </p>
-                  </div>
-                  <p className="content-font text-xs text-orange-600 mt-2 text-center">
-                    O pagamento será processado na entrega/retirada
-                  </p>
-                </div>
-              )}
-            </div>
-
             {/* Formulário de Dados */}
             <div className="space-y-4">
               <h4 className="content-font font-semibold text-gray-800">Seus Dados</h4>
@@ -704,42 +489,28 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
                 />
               </div>
               
-              {/* Endereço apenas se for entrega */}
-              {deliveryMethod === 'entrega' && (
-                <div>
-                  <label className="content-font text-sm font-medium text-gray-700 block mb-1">
-                    Endereço de Entrega *
-                  </label>
-                  <textarea
-                    value={customerData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    placeholder="Rua, número, bairro - Espera Feliz, MG"
-                    rows={3}
-                    className="w-full p-3 border border-gray-300 rounded-lg content-font focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  />
-                </div>
-              )}
+              <div>
+                <label className="content-font text-sm font-medium text-gray-700 block mb-1">
+                  Endereço de Entrega *
+                </label>
+                <textarea
+                  value={customerData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  placeholder="Rua, número, bairro - Espera Feliz, MG"
+                  rows={3}
+                  className="w-full p-3 border border-gray-300 rounded-lg content-font focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                />
+              </div>
             </div>
 
             {/* Informações de Entrega */}
             <div className="bg-pink-50 p-4 rounded-lg">
               <h4 className="content-font font-semibold text-gray-800 mb-2">Informações Importantes</h4>
               <ul className="content-font text-sm text-gray-700 space-y-1">
-                {deliveryMethod === 'entrega' ? (
-                  <>
-                    <li>• Entregamos apenas em Espera Feliz - MG</li>
-                    <li>• Entregas aos sábados e domingos</li>
-                  </>
-                ) : deliveryMethod === 'retirada' ? (
-                  <>
-                    <li>• Retirada no local aos sábados e domingos</li>
-                    <li>• Endereço será informado após confirmação do pedido</li>
-                  </>
-                ) : (
-                  <li>• Selecione uma forma de recebimento acima</li>
-                )}
+                <li>• Entregamos apenas em Espera Feliz - MG</li>
+                <li>• Entregas aos sábados e domingos</li>
                 <li>• Pagamento de 50% do valor para confirmar o pedido</li>
-                <li>• Restante do pagamento na {deliveryMethod === 'entrega' ? 'entrega' : 'retirada'}</li>
+                <li>• Restante do pagamento na entrega</li>
               </ul>
             </div>
 
