@@ -181,16 +181,8 @@ function App() {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-3">
-              <div className="flex items-center justify-center gap-2 content-font text-gray-700">
-                <MapPin className="w-5 h-5 heart-accent" />
-                <span>Entregamos apenas em Espera Feliz - MG</span>
-              </div>
-              <div className="flex items-center justify-center gap-2 content-font text-gray-700">
-                <Clock className="w-5 h-5 heart-accent" />
-                <span>Entregas aos sábados e domingos</span>
-              </div>
-              <p className="content-font text-sm text-gray-600 mt-4">
-                Para confirmar seu pedido, é necessário o pagamento de 50% do valor total
+              <p className="content-font text-lg text-gray-700">
+                Confirmar via WhatsApp
               </p>
             </CardContent>
           </Card>
@@ -209,8 +201,6 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
   })
   const [upsellQuantity, setUpsellQuantity] = useState(0)
   const [paymentMethod, setPaymentMethod] = useState('')
-  const [deliveryMethod, setDeliveryMethod] = useState('')
-
   // Determinar qual produto oferecer como upsell
   const getUpsellProduct = () => {
     const cartProductIds = Object.keys(cart)
@@ -292,9 +282,8 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
   const isFormValid = () => {
     return customerData.name.trim() && 
            customerData.phone.trim() && 
-           (deliveryMethod === 'retirada' || customerData.address.trim()) &&
-           paymentMethod &&
-           deliveryMethod
+           customerData.address.trim() &&
+           paymentMethod
   }
 
   const handleConfirmOrder = () => {
@@ -318,7 +307,7 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
 
     const orderNumber = generateOrderNumber()
     const finalTotal = getFinalTotal()
-    const confirmationAmount = finalTotal * 0.5
+
     const discountAmount = getDiscountAmount()
 
     // Gerar mensagem do WhatsApp
@@ -327,10 +316,7 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
     message += `👤 *Cliente:* ${customerData.name}\n`
     message += `📱 *WhatsApp:* ${customerData.phone}\n`
     
-    // Adicionar endereço apenas se for entrega
-    if (deliveryMethod === 'entrega') {
-      message += `📍 *Endereço:* ${customerData.address}\n`
-    }
+    message += `📍 *Endereço:* ${customerData.address}\n`
     message += `\n`
     
     message += `🛒 *PRODUTOS:*\n`
@@ -349,8 +335,7 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
       message += `\n💰 *Total:* R$ ${finalTotal.toFixed(2).replace('.', ',')}\n`
     }
     
-    message += `\n💳 *Valor para confirmar (50%):* R$ ${confirmationAmount.toFixed(2).replace('.', ',')}\n`
-    message += `💳 *Restante na ${deliveryMethod === 'entrega' ? 'entrega' : 'retirada'}:* R$ ${(finalTotal - confirmationAmount).toFixed(2).replace('.', ',')}\n\n`
+    message += `\n`
     
     // Adicionar informações de pagamento
     const paymentLabels = {
@@ -364,20 +349,12 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
       message += `💳 *Acréscimo Cartão (5%):* R$ ${getCardFeeAmount().toFixed(2).replace('.', ',')}\n`
     }
     
-    // Adicionar informações de recebimento
-    if (deliveryMethod === 'entrega') {
-      message += `🚚 *Recebimento:* Entrega\n`
-      message += `📅 *Entrega:* Sábados e Domingos\n`
-      message += `📍 *Região:* Espera Feliz - MG\n\n`
-    } else {
-      message += `🏪 *Recebimento:* Retirar no Local\n`
-      message += `📅 *Retirada:* Sábados e Domingos\n\n`
-    }
+    message += `🚚 *Recebimento:* Confirmar via WhatsApp\n\n`
     
     message += `✅ Cliente confirma o pedido e aguarda instruções de pagamento.`
 
     // Redirecionar para WhatsApp
-    const whatsappNumber = '5532984218936'
+    const whatsappNumber = '5532984825912'
     const encodedMessage = encodeURIComponent(message)
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`
     
@@ -445,10 +422,7 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
                     <span>Total:</span>
                     <span>R$ {getFinalTotal().toFixed(2).replace('.', ',')}</span>
                   </div>
-                  <div className="flex justify-between content-font text-sm text-gray-600 mt-1">
-                    <span>Valor para confirmar (50%):</span>
-                    <span className="font-semibold">R$ {(getFinalTotal() * 0.5).toFixed(2).replace('.', ',')}</span>
-                  </div>
+
                 </div>
               </div>
             </div>
@@ -521,64 +495,7 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
               </div>
             )}
 
-            {/* Opções de Recebimento */}
-            <div className="space-y-4">
-              <h4 className="content-font font-semibold text-gray-800">Como você quer receber?</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div 
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    deliveryMethod === 'entrega' 
-                      ? 'border-pink-500 bg-pink-50' 
-                      : 'border-gray-200 bg-white hover:border-pink-300'
-                  }`}
-                  onClick={() => setDeliveryMethod('entrega')}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      deliveryMethod === 'entrega' 
-                        ? 'border-pink-500 bg-pink-500' 
-                        : 'border-gray-300'
-                    }`}>
-                      {deliveryMethod === 'entrega' && (
-                        <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                      )}
-                    </div>
-                    <div>
-                      <h5 className="content-font font-semibold text-gray-800 flex items-center gap-2">
-                        <Bike className="w-4 h-4" /> Entrega
-                      </h5>
-                      <p className="content-font text-sm text-gray-600">Sábados e domingos em Espera Feliz - MG</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div 
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    deliveryMethod === 'retirada' 
-                      ? 'border-pink-500 bg-pink-50' 
-                      : 'border-gray-200 bg-white hover:border-pink-300'
-                  }`}
-                  onClick={() => setDeliveryMethod('retirada')}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      deliveryMethod === 'retirada' 
-                        ? 'border-pink-500 bg-pink-500' 
-                        : 'border-gray-300'
-                    }`}>
-                      {deliveryMethod === 'retirada' && (
-                        <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                      )}
-                    </div>
-                    <div>
-                      <h5 className="content-font font-semibold text-gray-800">🏪 Retirar no Local</h5>
-                      <p className="content-font text-sm text-gray-600">Centro - Próximo ao supermercado Vivenci - Beira Rio</p>
-                      <p className="content-font text-xs text-gray-500">Sábados e domingos</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+
 
             {/* Opções de Pagamento */}
             <div className="space-y-4">
@@ -586,7 +503,8 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div 
                   className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    paymentMethod === 'pix' 
+                    customerData.address.trim() &&
+           paymentMethod === 'pix' 
                       ? 'border-pink-500 bg-pink-50' 
                       : 'border-gray-200 bg-white hover:border-pink-300'
                   }`}
@@ -594,7 +512,8 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
                 >
                   <div className="text-center">
                     <div className={`w-4 h-4 rounded-full border-2 mx-auto mb-2 ${
-                      paymentMethod === 'pix' 
+                      customerData.address.trim() &&
+           paymentMethod === 'pix' 
                         ? 'border-pink-500 bg-pink-500' 
                         : 'border-gray-300'
                     }`}>
@@ -609,7 +528,8 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
                 
                 <div 
                   className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    paymentMethod === 'cartao' 
+                    customerData.address.trim() &&
+           paymentMethod === 'cartao' 
                       ? 'border-pink-500 bg-pink-50' 
                       : 'border-gray-200 bg-white hover:border-pink-300'
                   }`}
@@ -617,7 +537,8 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
                 >
                   <div className="text-center">
                     <div className={`w-4 h-4 rounded-full border-2 mx-auto mb-2 ${
-                      paymentMethod === 'cartao' 
+                      customerData.address.trim() &&
+           paymentMethod === 'cartao' 
                         ? 'border-pink-500 bg-pink-500' 
                         : 'border-gray-300'
                     }`}>
@@ -641,8 +562,7 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
                     Realize o pagamento na chave PIX abaixo:
                   </p>
                   <div className="bg-white p-3 rounded border border-green-300">
-                    <p className="content-font text-lg font-bold text-center text-green-800">
-                      32984218936
+                    <p className="content-font text-lg font-bold text-center text-green-800">32984825912
                     </p>
                   </div>
                   <p className="content-font text-xs text-green-600 mt-2 text-center">
@@ -668,7 +588,7 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
                     </p>
                   </div>
                   <p className="content-font text-xs text-orange-600 mt-2 text-center">
-                    O pagamento será processado na entrega/retirada
+                    Confirme seu pagamento via WhatsApp
                   </p>
                 </div>
               )}
@@ -721,27 +641,7 @@ function CheckoutPage({ cart, products, setCurrentPage }) {
               )}
             </div>
 
-            {/* Informações de Entrega */}
-            <div className="bg-pink-50 p-4 rounded-lg">
-              <h4 className="content-font font-semibold text-gray-800 mb-2">Informações Importantes</h4>
-              <ul className="content-font text-sm text-gray-700 space-y-1">
-                {deliveryMethod === 'entrega' ? (
-                  <>
-                    <li>• Entregamos apenas em Espera Feliz - MG</li>
-                    <li>• Entregas aos sábados e domingos</li>
-                  </>
-                ) : deliveryMethod === 'retirada' ? (
-                  <>
-                    <li>• Retirada no local aos sábados e domingos</li>
-                    <li>• Endereço será informado após confirmação do pedido</li>
-                  </>
-                ) : (
-                  <li>• Selecione uma forma de recebimento acima</li>
-                )}
-                <li>• Pagamento de 50% do valor para confirmar o pedido</li>
-                <li>• Restante do pagamento na {deliveryMethod === 'entrega' ? 'entrega' : 'retirada'}</li>
-              </ul>
-            </div>
+
 
             {/* Botões */}
             <div className="space-y-3">
