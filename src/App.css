@@ -120,16 +120,32 @@
   }
 }
 
-/* Estilos customizados para Doces da Paixão */
+/* Estilos customizados para Doces da Paixão - Versão Melhorada */
 .gradient-bg {
-  background: linear-gradient(135deg, #4A1A4A 0%, #6B2C6B 50%, #8B4A8B 100%);
+  background: linear-gradient(135deg, #4A1A4A 0%, #6B2C6B 25%, #8B4A8B 50%, #A855A8 75%, #C084C0 100%);
+  position: relative;
+}
+
+.gradient-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .brand-title {
   font-family: 'Dancing Script', cursive;
   font-weight: 700;
   color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 1;
 }
 
 .content-font {
@@ -138,42 +154,264 @@
 
 .heart-accent {
   color: #E91E63;
+  filter: drop-shadow(0 2px 4px rgba(233, 30, 99, 0.3));
 }
 
 .product-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.product-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s;
+}
+
+.product-card:hover::before {
+  left: 100%;
 }
 
 .product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
+  background: linear-gradient(135deg, #E91E63 0%, #C2185B 50%, #AD1457 100%);
   color: white;
   border: none;
-  border-radius: 12px;
-  padding: 12px 24px;
+  border-radius: 16px;
+  padding: 14px 28px;
   font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(233, 30, 99, 0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 6px 20px rgba(233, 30, 99, 0.4),
+    0 2px 8px rgba(233, 30, 99, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4);
-  background: linear-gradient(135deg, #C2185B 0%, #AD1457 100%);
+  transform: translateY(-3px);
+  box-shadow: 
+    0 8px 25px rgba(233, 30, 99, 0.5),
+    0 4px 12px rgba(233, 30, 99, 0.3);
+  background: linear-gradient(135deg, #C2185B 0%, #AD1457 50%, #880E4F 100%);
+}
+
+.btn-primary:active {
+  transform: translateY(-1px);
 }
 
 .decorative-line {
-  width: 120px;
-  height: 3px;
-  background: linear-gradient(90deg, transparent 0%, #E91E63 50%, transparent 100%);
+  width: 150px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent 0%, #E91E63 20%, #F06292 50%, #E91E63 80%, transparent 100%);
   margin: 0 auto;
   border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(233, 30, 99, 0.3);
+}
+
+/* Animações personalizadas */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s ease-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-gentle {
+  animation: pulse 2s infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Melhorias nos componentes de UI */
+.product-card img {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card:hover img {
+  transform: scale(1.1);
+}
+
+/* Estilos para badges e elementos especiais */
+.badge-special {
+  background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+  color: white;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+/* Estilos para navegação */
+nav {
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Estilos para formulários */
+input, textarea {
+  transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.2);
+}
+
+/* Estilos para cards de depoimentos */
+.testimonial-card {
+  transition: all 0.3s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Estilos responsivos melhorados */
+@media (max-width: 768px) {
+  .brand-title {
+    font-size: 3rem !important;
+  }
+  
+  .product-card {
+    margin-bottom: 1rem;
+  }
+  
+  .btn-primary {
+    padding: 12px 24px;
+  }
+}
+
+/* Estilos para elementos interativos */
+button:not(.btn-primary) {
+  transition: all 0.3s ease;
+}
+
+button:not(.btn-primary):hover {
+  transform: translateY(-1px);
+}
+
+/* Estilos para o footer */
+footer {
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Estilos para notificações */
+.notification-card {
+  animation: slideInRight 0.5s ease-out;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos para seções especiais */
+.special-section {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Melhorias na tipografia */
+h1, h2, h3, h4, h5, h6 {
+  text-rendering: optimizeLegibility;
+}
+
+p {
+  line-height: 1.7;
+}
+
+/* Estilos para elementos de destaque */
+.highlight-box {
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.1), rgba(233, 30, 99, 0.05));
+  border: 2px solid rgba(233, 30, 99, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.highlight-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #E91E63, #F06292, #E91E63);
+}
+
+/* Estilos para loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
